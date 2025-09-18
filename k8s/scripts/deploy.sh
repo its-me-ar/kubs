@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Get the directory where the script is located and go to parent (k8s directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+K8S_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$K8S_DIR"
+
 # Kubernetes deployment script for kubs microservices
 echo "🚀 Deploying kubs microservices to Kubernetes..."
 
@@ -11,6 +16,31 @@ if ! minikube status > /dev/null 2>&1; then
 fi
 
 echo "✅ Minikube is running"
+
+# Build and load Docker images
+echo "🐳 Building Docker images..."
+cd ..
+
+# Build images
+echo "   Building submitter image..."
+docker build -t kubs-submitter ./submitter
+
+echo "   Building workers image..."
+docker build -t kubs-workers ./workers
+
+echo "   Building stats image..."
+docker build -t kubs-stats ./stats
+
+# Load images into Minikube
+echo "📦 Loading images into Minikube..."
+minikube image load kubs-submitter
+minikube image load kubs-workers
+minikube image load kubs-stats
+
+echo "✅ Docker images built and loaded successfully"
+
+# Go back to k8s directory
+cd k8s
 
 # Create ConfigMap first
 echo "📋 Creating ConfigMap..."
@@ -37,6 +67,9 @@ kubectl apply -f worker.yaml
 # Deploy Ingress
 echo "🌐 Deploying Ingress..."
 kubectl apply -f ingress.yaml
+
+echo "📈 Deploying HPA (Horizontal Pod Autoscaler)..."
+kubectl apply -f hpa.yaml
 
 # Wait for all deployments to be ready
 echo "⏳ Waiting for all services to be ready..."
