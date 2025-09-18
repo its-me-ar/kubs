@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-config
+  namespace: default
+  labels:
+    app: kubs
+    version: "1.0"
+    environment: "production"
+data:
+  # Service URLs for inter-service communication (internal ClusterIP)
+  SUBMITTER_SERVICE_URL: "http://submitter-service:3000"
+  WORKERS_SERVICE_URL: "http://worker-service:3001"
+  STATS_SERVICE_URL: "http://stats-service:3002"
+  
+  # External access URLs (via Ingress + LoadBalancer)
+  EXTERNAL_SUBMITTER_URL: "http://kubs.local"
+  EXTERNAL_API_URL: "http://api.kubs.local"
+  EXTERNAL_HEALTH_URL: "http://health.kubs.local"
+  
+  # Redis configuration
+  REDIS_URL: "redis://redis-service:6379"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # Environment configuration
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  
+  # Health check configuration
+  HEALTH_CHECK_INTERVAL: "30000"
+  HEALTH_CHECK_TIMEOUT: "5000"
+  
+  # Job processing configuration
+  MAX_JOBS_PER_WORKER: "10"
+  JOB_TIMEOUT: "300000"
+  
+  # Monitoring configuration
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  
+  # CORS configuration
+  CORS_ORIGIN: "*"
+  CORS_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+  CORS_HEADERS: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
