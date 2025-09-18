@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Get the directory where the script is located and go to parent (k8s directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+K8S_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$K8S_DIR"
+
 # Kubernetes cleanup script for kubs microservices
 echo "🧹 Cleaning up kubs microservices from Kubernetes..."
 
@@ -16,6 +21,7 @@ kubectl delete -f stats.yaml
 kubectl delete -f redis.yaml
 kubectl delete -f configmap.yaml
 kubectl delete -f ingress.yaml
+kubectl delete -f hpa.yaml
 
 # Wait for cleanup
 echo "⏳ Waiting for cleanup to complete..."

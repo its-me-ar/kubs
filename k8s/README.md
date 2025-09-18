@@ -10,6 +10,7 @@ k8s/
 │   ├── deploy.sh       # Main deployment script
 │   └── cleanup.sh      # Cleanup script
 ├── configmap.yaml      # Environment configuration
+├── hpa.yaml           # Horizontal Pod Autoscaler for workers
 ├── ingress.yaml        # Ingress for submitter service
 ├── redis.yaml          # Redis service (ClusterIP)
 ├── stats.yaml          # Stats service (ClusterIP)
@@ -23,7 +24,7 @@ k8s/
 - **Redis**: Database and message broker (ClusterIP - internal only)
 - **Stats Service**: Metrics and statistics service (ClusterIP - internal only)
 - **Submitter Service**: Job submission service (Ingress + LoadBalancer - external access)
-- **Worker Service**: Background job processing service (ClusterIP - internal only)
+- **Worker Service**: Background job processing service (ClusterIP - internal only) with HPA (2-10 pods)
 
 ## Architecture
 
@@ -33,6 +34,17 @@ This deployment uses a **hybrid architecture**:
 - **Internal Access**: Stats, Workers, and Redis services use ClusterIP (internal only)
 - **Security**: Only the API gateway (submitter) is accessible from outside the cluster
 - **Performance**: Internal services communicate directly for optimal performance
+- **Auto-scaling**: Worker service automatically scales based on CPU usage
+
+## Auto-scaling (HPA)
+
+The **Worker Service** includes Horizontal Pod Autoscaler (HPA) for automatic scaling:
+
+- **Scale Range**: 2 → 10 pods
+- **Trigger**: CPU usage > 70%
+- **Scale Up**: Aggressive scaling (up to 100% increase per 15s)
+- **Scale Down**: Conservative scaling (max 10% decrease per 60s)
+- **Stabilization**: 60s scale-up, 300s scale-down windows
 
 ## Prerequisites
 
@@ -247,12 +259,30 @@ kubectl rollout restart deployment/submitter-deployment
 kubectl rollout restart deployment/worker-deployment
 ```
 
+## Monitoring HPA
+
+Monitor the Horizontal Pod Autoscaler:
+
+```bash
+# Check HPA status
+kubectl get hpa
+
+# Detailed HPA information
+kubectl describe hpa worker-hpa
+
+# Monitor worker pod resource usage
+kubectl top pods -l app=worker
+
+# Watch HPA events
+kubectl get events --sort-by=.metadata.creationTimestamp
+```
+
 ## Architecture Notes
 
 - **Hybrid Architecture**: Submitter exposed externally, others internal only
 - **Security**: Only API gateway accessible from outside cluster
 - **Performance**: Internal services communicate directly
-- **Scalability**: LoadBalancer handles external traffic
+- **Scalability**: LoadBalancer handles external traffic + HPA for workers
 - **Monitoring**: Stats service monitors all services internally
 
 ## Development Notes
