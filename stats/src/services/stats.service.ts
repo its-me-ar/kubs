@@ -105,11 +105,15 @@ class StatsService {
 
   async getServiceStats(): Promise<ServiceStats> {
     try {
+      // Get service URLs from environment variables with fallbacks
+      const submitterUrl = process.env.SUBMITTER_SERVICE_URL || "http://localhost:3000";
+      const workersUrl = process.env.WORKERS_SERVICE_URL || "http://localhost:3001";
+      
       // Check submitter service
-      const submitterStatus = await this.checkServiceHealth("http://localhost:3000/health");
+      const submitterStatus = await this.checkServiceHealth(`${submitterUrl}/health`);
       
       // Check workers service
-      const workersStatus = await this.checkServiceHealth("http://localhost:3001/health");
+      const workersStatus = await this.checkServiceHealth(`${workersUrl}/health`);
       
       // Check Redis connection
       const redisStatus = await this.checkRedisHealth();

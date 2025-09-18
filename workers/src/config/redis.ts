@@ -16,10 +16,14 @@ redis.on('error', (err) => {
   logger.error('❌ Workers Redis connection error:', err);
 });
 
+// Parse Redis URL for BullMQ connection
+const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+const url = new URL(redisUrl);
+
 // Export the connection object for BullMQ
 export const connection = {
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: Number(process.env.REDIS_PORT) || 6379,
+  host: process.env.REDIS_HOST || url.hostname,
+  port: Number(process.env.REDIS_PORT) || Number(url.port),
 };
 
 export default redis;
