@@ -17,9 +17,7 @@ kubectl delete namespace monitoring --ignore-not-found=true
 echo "🗑️  Removing ServiceMonitors..."
 kubectl delete -f ../servicemonitors.yaml --ignore-not-found=true
 
-# Remove Grafana dashboard
-echo "🗑️  Removing Grafana dashboard..."
-kubectl delete -f ../grafana-dashboard-configmap.yaml --ignore-not-found=true
+# Note: No custom dashboard to remove
 
 # Remove Grafana secret
 echo "🗑️  Removing Grafana secret..."

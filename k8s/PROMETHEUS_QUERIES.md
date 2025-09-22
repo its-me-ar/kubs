@@ -10,32 +10,63 @@ This document contains useful Prometheus queries for monitoring your kubs micros
 # Then open: http://localhost:9090
 ```
 
+## ⚡ **Quick Copy-Paste Queries**
+
+### **Worker Service (3 Core Metrics)**
+```promql
+# Total jobs processed
+jobs_processed_total{job="worker-service"}
+
+# Job processing time (95th percentile)
+histogram_quantile(0.95, rate(job_processing_time_seconds_bucket{job="worker-service"}[5m]))
+
+# Total job errors
+job_errors_total{job="worker-service"}
+```
+
+### **Stats Service (3 Core Metrics)**
+```promql
+# Total jobs submitted
+total_jobs_submitted{job="stats-service"}
+
+# Total jobs completed
+total_jobs_completed{job="stats-service"}
+
+# Current queue length
+queue_length{job="stats-service"}
+```
+
 ---
 
 ## ⚙️ **Worker Service Metrics**
 
-### **Job Processing Metrics**
+### **Core Worker Metrics (Your Requested)**
 ```promql
 # Total jobs processed
-jobs_processed_total
+jobs_processed_total{job="worker-service"}
 
+# Job processing time histogram (95th percentile)
+histogram_quantile(0.95, rate(job_processing_time_seconds_bucket{job="worker-service"}[5m]))
+
+# Total job errors
+job_errors_total{job="worker-service"}
+```
+
+### **Additional Worker Metrics**
+```promql
 # Jobs processed rate (per minute)
-rate(jobs_processed_total[5m]) * 60
-
-# Job errors
-job_errors_total
+rate(jobs_processed_total{job="worker-service"}[5m]) * 60
 
 # Job error rate (per minute)
-rate(job_errors_total[5m]) * 60
+rate(job_errors_total{job="worker-service"}[5m]) * 60
 
-# Job processing time histogram
-job_processing_time_seconds
+# Job processing time histogram (all percentiles)
+histogram_quantile(0.50, rate(job_processing_time_seconds_bucket{job="worker-service"}[5m]))
+histogram_quantile(0.95, rate(job_processing_time_seconds_bucket{job="worker-service"}[5m]))
+histogram_quantile(0.99, rate(job_processing_time_seconds_bucket{job="worker-service"}[5m]))
 
 # Average processing time
-rate(job_processing_time_seconds_sum[5m]) / rate(job_processing_time_seconds_count[5m])
-
-# 95th percentile processing time
-histogram_quantile(0.95, rate(job_processing_time_seconds_bucket[5m]))
+rate(job_processing_time_seconds_sum{job="worker-service"}[5m]) / rate(job_processing_time_seconds_count{job="worker-service"}[5m])
 ```
 
 ### **Worker Health & Performance**
@@ -57,31 +88,34 @@ nodejs_eventloop_lag_seconds{job="worker-service"}
 
 ## 📊 **Stats Service Metrics**
 
-### **Job Statistics**
+### **Core Stats Metrics (Your Requested)**
 ```promql
 # Total jobs submitted
-total_jobs_submitted
+total_jobs_submitted{job="stats-service"}
 
 # Total jobs completed
-total_jobs_completed
-
-# Total jobs failed
-total_jobs_failed
+total_jobs_completed{job="stats-service"}
 
 # Current queue length
-queue_length
+queue_length{job="stats-service"}
+```
+
+### **Additional Stats Metrics**
+```promql
+# Total jobs failed
+total_jobs_failed{job="stats-service"}
 
 # Average processing time
-average_processing_time_seconds
+average_processing_time_seconds{job="stats-service"}
 
 # Jobs submitted rate (per minute)
-rate(total_jobs_submitted[5m]) * 60
+rate(total_jobs_submitted{job="stats-service"}[5m]) * 60
 
 # Jobs completed rate (per minute)
-rate(total_jobs_completed[5m]) * 60
+rate(total_jobs_completed{job="stats-service"}[5m]) * 60
 
 # Jobs failed rate (per minute)
-rate(total_jobs_failed[5m]) * 60
+rate(total_jobs_failed{job="stats-service"}[5m]) * 60
 ```
 
 ### **Success Rate & Error Rate**

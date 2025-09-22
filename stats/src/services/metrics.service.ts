@@ -2,9 +2,9 @@ import client from "prom-client";
 
 class MetricsService {
   private register: client.Registry;
-  private totalJobsSubmitted: client.Counter;
-  private totalJobsCompleted: client.Counter;
-  private totalJobsFailed: client.Counter;
+  private totalJobsSubmitted: client.Gauge;
+  private totalJobsCompleted: client.Gauge;
+  private totalJobsFailed: client.Gauge;
   private queueLength: client.Gauge;
   private averageProcessingTime: client.Gauge;
 
@@ -12,17 +12,17 @@ class MetricsService {
     this.register = new client.Registry();
     client.collectDefaultMetrics({ register: this.register });
 
-    this.totalJobsSubmitted = new client.Counter({
+    this.totalJobsSubmitted = new client.Gauge({
       name: "total_jobs_submitted",
       help: "Total number of jobs submitted to the system",
     });
 
-    this.totalJobsCompleted = new client.Counter({
+    this.totalJobsCompleted = new client.Gauge({
       name: "total_jobs_completed",
       help: "Total number of jobs completed successfully",
     });
 
-    this.totalJobsFailed = new client.Counter({
+    this.totalJobsFailed = new client.Gauge({
       name: "total_jobs_failed",
       help: "Total number of jobs that failed",
     });
@@ -51,17 +51,10 @@ class MetricsService {
     queueLength: number;
     averageProcessingTime: number;
   }): void {
-    // Reset counters to current values
-    this.totalJobsSubmitted.reset();
-    this.totalJobsCompleted.reset();
-    this.totalJobsFailed.reset();
-    
-    // Set the new values
-    this.totalJobsSubmitted.inc(stats.totalJobsSubmitted);
-    this.totalJobsCompleted.inc(stats.totalJobsCompleted);
-    this.totalJobsFailed.inc(stats.totalJobsFailed);
-    
-    // Gauges can be set directly
+    // Set gauge values directly (no reset needed for gauges)
+    this.totalJobsSubmitted.set(stats.totalJobsSubmitted);
+    this.totalJobsCompleted.set(stats.totalJobsCompleted);
+    this.totalJobsFailed.set(stats.totalJobsFailed);
     this.queueLength.set(stats.queueLength);
     this.averageProcessingTime.set(stats.averageProcessingTime);
   }

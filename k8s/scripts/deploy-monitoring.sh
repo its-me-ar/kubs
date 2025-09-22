@@ -57,9 +57,7 @@ fi
 echo "📡 Applying ServiceMonitors..."
 kubectl apply -f ../servicemonitors.yaml
 
-# Apply Grafana dashboard
-echo "📈 Applying Grafana dashboard..."
-kubectl apply -f ../grafana-dashboard-configmap.yaml
+# Note: Grafana dashboard can be created manually in the UI
 
 # Get access information
 echo "✅ Monitoring stack deployed successfully!"

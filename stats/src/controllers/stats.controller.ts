@@ -36,6 +36,10 @@ export class StatsController {
    */
   static async getMetrics(req: Request, res: Response): Promise<void> {
     try {
+      // Update metrics with current data before serving
+      const jobStats = await statsService.getJobStats();
+      metricsService.updateJobStats(jobStats);
+      
       res.status(200).set("Content-Type", metricsService.getContentType());
       const metrics = await metricsService.getMetrics();
       res.end(metrics);
