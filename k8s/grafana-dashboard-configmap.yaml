@@ -1,0 +1,244 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-kubs
+  namespace: default
+  labels:
+    grafana_dashboard: "1"
+data:
+  kubs-dashboard.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Kubs Application Monitoring",
+        "tags": ["kubs", "kubernetes", "microservices"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Application Overview",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=~\"kubs-.*\"}",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "green", "value": 1}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Job Processing Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(jobs_processed_total[5m])",
+                "refId": "A",
+                "legendFormat": "Jobs/sec"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Jobs per second",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Job Statistics",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "total_jobs_submitted",
+                "refId": "A",
+                "legendFormat": "Total Submitted"
+              },
+              {
+                "expr": "total_jobs_completed",
+                "refId": "B",
+                "legendFormat": "Total Completed"
+              },
+              {
+                "expr": "total_jobs_failed",
+                "refId": "C",
+                "legendFormat": "Total Failed"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Job Count",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          },
+          {
+            "id": 4,
+            "title": "Queue Length",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "queue_length",
+                "refId": "A",
+                "legendFormat": "Queue Length"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Jobs in Queue",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+          },
+          {
+            "id": 5,
+            "title": "Average Processing Time",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "average_processing_time_seconds",
+                "refId": "A",
+                "legendFormat": "Avg Processing Time (s)"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Seconds",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+          },
+          {
+            "id": 6,
+            "title": "Job Processing Time Distribution",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.5, rate(job_processing_time_seconds_bucket[5m]))",
+                "refId": "A",
+                "legendFormat": "50th percentile"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(job_processing_time_seconds_bucket[5m]))",
+                "refId": "B",
+                "legendFormat": "95th percentile"
+              },
+              {
+                "expr": "histogram_quantile(0.99, rate(job_processing_time_seconds_bucket[5m]))",
+                "refId": "C",
+                "legendFormat": "99th percentile"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Seconds",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24}
+          },
+          {
+            "id": 7,
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(job_errors_total[5m])",
+                "refId": "A",
+                "legendFormat": "Errors/sec"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Errors per second",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+          },
+          {
+            "id": 8,
+            "title": "CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{pod=~\"stats-.*|worker-.*\"}[5m]) * 100",
+                "refId": "A",
+                "legendFormat": "{{pod}} CPU %"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "CPU %",
+                "min": 0,
+                "max": 100
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+          },
+          {
+            "id": 9,
+            "title": "Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{pod=~\"stats-.*|worker-.*\"} / 1024 / 1024",
+                "refId": "A",
+                "legendFormat": "{{pod}} Memory (MB)"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Memory (MB)",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40}
+          },
+          {
+            "id": 10,
+            "title": "Pod Restarts",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "kube_pod_container_status_restarts_total{pod=~\"stats-.*|worker-.*\"}",
+                "refId": "A",
+                "legendFormat": "{{pod}} Restarts"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "Restart Count",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40}
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s",
+        "schemaVersion": 27,
+        "version": 1
+      }
+    }

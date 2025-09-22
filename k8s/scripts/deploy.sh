@@ -52,7 +52,7 @@ kubectl apply -f redis.yaml
 
 # Wait for Redis to be ready
 echo "⏳ Waiting for Redis to be ready..."
-kubectl wait --for=condition=available --timeout=300s deployment/redis
+kubectl wait --for=condition=available --timeout=300s deployment/redis || echo "⚠️  Redis deployment ready check timed out"
 
 # Deploy other services
 echo "📦 Deploying Stats service..."

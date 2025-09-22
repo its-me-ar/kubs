@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubs-stats-monitor
+  namespace: monitoring
+  labels:
+    app: stats
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: stats
+  namespaceSelector:
+    matchNames:
+    - default
+  endpoints:
+  - port: "3002"
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubs-worker-monitor
+  namespace: monitoring
+  labels:
+    app: worker
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: worker
+  namespaceSelector:
+    matchNames:
+    - default
+  endpoints:
+  - port: "3001"
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
