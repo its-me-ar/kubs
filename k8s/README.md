@@ -6,17 +6,22 @@ This directory contains Kubernetes manifests for deploying the kubs microservice
 
 ```
 k8s/
-├── scripts/            # Deployment and management scripts
-│   ├── deploy.sh       # Main deployment script
-│   └── cleanup.sh      # Cleanup script
-├── configmap.yaml      # Environment configuration
-├── hpa.yaml           # Horizontal Pod Autoscaler for workers
-├── ingress.yaml        # Ingress for submitter service
-├── redis.yaml          # Redis service (ClusterIP)
-├── stats.yaml          # Stats service (ClusterIP)
-├── submitter.yaml      # Submitter service (Ingress)
-├── worker.yaml         # Worker service (ClusterIP)
-└── README.md           # This documentation
+├── scripts/                    # Deployment and management scripts
+│   ├── deploy.sh              # Main deployment script
+│   ├── cleanup.sh             # Cleanup script
+│   ├── deploy-monitoring.sh   # Deploy Prometheus & Grafana
+│   └── cleanup-monitoring.sh  # Cleanup monitoring stack
+├── configmap.yaml             # Environment configuration
+├── hpa.yaml                   # Horizontal Pod Autoscaler for workers
+├── ingress.yaml               # Ingress for submitter service
+├── redis.yaml                 # Redis service (ClusterIP)
+├── stats.yaml                 # Stats service (ClusterIP)
+├── submitter.yaml             # Submitter service (Ingress)
+├── worker.yaml                # Worker service (ClusterIP)
+├── prometheus-values.yaml     # Prometheus Helm values
+├── servicemonitors.yaml       # ServiceMonitor resources
+├── grafana-dashboard-configmap.yaml # Grafana dashboard
+└── README.md                  # This documentation
 ```
 
 ## Services
@@ -155,6 +160,63 @@ kubectl port-forward service/redis-service 6379:6379
 
 ## Monitoring
 
+### Prometheus & Grafana Stack
+
+The application includes comprehensive monitoring with Prometheus and Grafana:
+
+#### Deploy Monitoring Stack
+```bash
+# Deploy Prometheus and Grafana
+./scripts/deploy-monitoring.sh
+
+# Clean up monitoring
+./scripts/cleanup-monitoring.sh
+```
+
+#### Access Monitoring Dashboards
+
+**Grafana Dashboard:**
+```bash
+# Port forward to access Grafana
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+# Open http://localhost:3000 (admin/admin123)
+```
+
+**Prometheus UI:**
+```bash
+# Port forward to access Prometheus
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+# Open http://localhost:9090
+```
+
+#### Available Metrics
+
+**Custom Application Metrics:**
+- `total_jobs_submitted` - Total jobs submitted to the system
+- `total_jobs_completed` - Total jobs completed successfully
+- `total_jobs_failed` - Total jobs that failed
+- `queue_length` - Current length of the job queue
+- `average_processing_time_seconds` - Average processing time for jobs
+- `jobs_processed_total` - Total jobs processed by workers
+- `job_errors_total` - Total job errors
+- `job_processing_time_seconds` - Job processing time histogram
+
+**Kubernetes Metrics:**
+- CPU and Memory usage for all pods
+- Pod restart counts
+- Service availability
+
+#### Grafana Dashboards
+
+The monitoring stack includes a comprehensive dashboard with:
+- Application overview and health status
+- Job processing rates and statistics
+- Queue length monitoring
+- Processing time distribution (50th, 95th, 99th percentiles)
+- Error rates and trends
+- CPU and Memory usage graphs
+- Pod restart monitoring
+
 ### View Logs
 ```bash
 # All services
@@ -174,6 +236,9 @@ kubectl get services
 
 # Deployments
 kubectl get deployments
+
+# Monitoring pods
+kubectl get pods -n monitoring
 ```
 
 ## Configuration
